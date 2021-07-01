@@ -33,9 +33,17 @@ export function isLoadingDetails(isCurrentlyLoading: boolean) {
   contributorStore.loadingDetails = isCurrentlyLoading;
 }
 
-export async function loadContributors(repoName: string, max: number) {
+/**
+ * Requests contributors from Github and updates the state with the usernames of the new contributor list
+ * 
+ * NOTE: Only the usernames are stored since the actual user data can change even though the list doesn't.
+ * By using only the usernames, we can look up the data when listing the users and not having to update the entire list every time.
+ * 
+ * @param repoName - The full name of the repository (owner/repo - eg. microsoft/vscode).
+ */
+export async function loadContributors(repoName: string) {
   isLoading(true);
-  const contributors = await getContributors(repoName, max);
+  const contributors = await getContributors(repoName, contributorStore.max);
   setContributors(contributors.map((c) => c.login));
   isLoading(false);
 }

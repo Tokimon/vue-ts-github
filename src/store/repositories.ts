@@ -29,9 +29,14 @@ export function isLoading(isCurrentlyLoading: boolean) {
   repositoryStore.loading = isCurrentlyLoading;
 }
 
-export async function loadRepositories(topic: string, max: number) {
+/**
+ * Requests repositories from Github from the given topic and updates the state with the new list of repositories
+ * 
+ * @param repoName - The full name of the repository (owner/repo - eg. microsoft/vscode).
+ */
+export async function loadRepositories(topic: string) {
   isLoading(true);
-  const repositories = await getRepositories(topic, max);
+  const repositories = await getRepositories(topic, repositoryStore.max);
   setRepositories(repositories);
   isLoading(false);
 }
