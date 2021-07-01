@@ -6,6 +6,9 @@ import getRepositories from '~/data-fetching/getRepositories';
 
 
 
+export type LoadRepositoriesFunction = (topic: string) => void;
+
+
 export const repositoryStore = reactive({
   repositories: [] as RepositoryEntry[],
   current: '',
@@ -30,13 +33,24 @@ export function isLoading(isCurrentlyLoading: boolean) {
 }
 
 /**
- * Requests repositories from Github from the given topic and updates the state with the new list of repositories
+ * A `loadRepositories` factory. Mainly here to help with testing so we don't have to mock the HTTP calls,
+ * but only the function that is tasked with fetching the data.
  * 
- * @param repoName - The full name of the repository (owner/repo - eg. microsoft/vscode).
+ * @param requestRepositories - The function to fetch the repositories.
  */
-export async function loadRepositories(topic: string) {
-  isLoading(true);
-  const repositories = await getRepositories(topic, repositoryStore.max);
-  setRepositories(repositories);
-  isLoading(false);
+export function createLoadRepositories(requestRepositories: typeof getRepositories): LoadRepositoriesFunction {
+  /**
+   * Requests repositories from Github from the given topic and updates the state with the new list of repositories
+   * 
+   * @param repoName - The full name of the repository (owner/repo - eg. microsoft/vscode).
+   */
+  return async function loadRepositories(topic) {
+    isLoading(true);
+    const repositories = await requestRepositories(topic, repositoryStore.max);
+    setRepositories(repositories);
+    isLoading(false);
+  }
 }
+
+
+export const loadRepositories = createLoadRepositories(getRepositories);

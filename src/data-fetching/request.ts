@@ -15,9 +15,11 @@ export type fetchFunction = typeof window.fetch;
 export function urlParams(params?: Record<string, unknown>): string {
   if (!params) { return ''; }
 
-  return Object.entries(params)
+  const str = Object.entries(params)
     .map((entry) => entry.join('='))
     .join('&');
+  
+  return str ? '?' + str : str;
 }
 
 /**
@@ -28,7 +30,7 @@ export function urlParams(params?: Record<string, unknown>): string {
  */
 export function createRequest(fetch: fetchFunction): RequestFunction {
   return async function request(path, params) {
-    const result = await fetch('https://api.github.com' + path + '?' + urlParams(params));
+    const result = await fetch('https://api.github.com' + path + urlParams(params));
     return result.json();
   }
 }

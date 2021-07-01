@@ -10,7 +10,7 @@ interface GithubRepositoryRequest {
   items: GithubRepository[]
 }
 
-export type getRepositoriesFunction = (q: string, per_page: number) => Promise<RepositoryEntry[]>;
+export type getRepositoriesFunction = (q: string, per_page?: number) => Promise<RepositoryEntry[]>;
 
 
 /**
@@ -27,13 +27,16 @@ export function createGetRepositories(request: RequestFunction): getRepositories
    * @param per_page - The number of results to fetch per page
    */
   return async function getRepositories(q, per_page = 30) {
-    const result = await request<GithubRepositoryRequest>(`/search/repositories`, {
-      sort: 'stars',
-      order: 'desc',
-      q,
-      per_page,
-      type: 'public'
-    });
+    const result = await request<GithubRepositoryRequest>(
+      '/search/repositories',
+      {
+        sort: 'stars',
+        order: 'desc',
+        type: 'public',
+        q,
+        per_page
+      }
+    );
   
     return result.items.map(({ html_url, name, full_name, stargazers_count, owner, id }) => ({
       id,

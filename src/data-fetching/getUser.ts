@@ -5,7 +5,7 @@ import { GithubUser, Contributor } from "~/types";
 
 
 
-export type getUsersFunction = (username: string) => Promise<Contributor>;
+export type getUserFunction = (username: string) => Promise<Contributor>;
 
 
 /**
@@ -14,7 +14,7 @@ export type getUsersFunction = (username: string) => Promise<Contributor>;
  * 
  * @param request - The function to fetch the data.
  */
-export function createGetUsers(request: RequestFunction): getUsersFunction {
+export function createGetUser(request: RequestFunction): getUserFunction {
   /**
    * Get the user data for the given user name from Github, and returns the data correctly formatted.
    * 
@@ -31,7 +31,7 @@ export function createGetUsers(request: RequestFunction): getUsersFunction {
       followers,
       avatar_url,
       html_url,
-      hireable = false,
+      hireable,
       blog
     } = await request<GithubUser>(`/users/${username}`);
 
@@ -51,4 +51,4 @@ export function createGetUsers(request: RequestFunction): getUsersFunction {
   }
 }
 
-export default createGetUsers(request)
+export default createGetUser(request)

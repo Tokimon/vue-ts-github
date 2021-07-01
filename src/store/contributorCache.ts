@@ -1,21 +1,24 @@
-import type { ContributorEntry, Contributor, ContributorItem } from '~/types';
+import type { ContributorEntry, Contributor } from '~/types';
 
-import requestUser from '~/data-fetching/getUser';
+import getUser from '~/data-fetching/getUser';
 
 
 
-interface ContributorCache {
+export interface ContributorCache {
   [name: string]: Contributor
 }
 
-interface ContributorRepoMapping {
+export interface ContributorRepoMapping {
   [repoName: string]: Set<string>
 }
 
+export type CompleteContributorFunction = (username: string) => Promise<Contributor>;
 
 
-const _ContributorCache: ContributorCache = {};
-const _ContributorRepoMapping: ContributorRepoMapping = {};
+
+/* These two are exported for testing purposes */
+export const _ContributorCache: ContributorCache = {};
+export const _ContributorRepoMapping: ContributorRepoMapping = {};
 
 
 
@@ -58,6 +61,13 @@ export function storeContributor(contributor: Contributor) {
 export const getContributor = (username: string) => _ContributorCache[username];
 
 /**
+ * Returns the contributor names for given a repository
+ * 
+ * @param repoName - The full name of the repository (owner/repo - eg. microsoft/vscode).
+ */
+export const getRepositoryContributors = (repoName: string) => _ContributorRepoMapping[repoName];
+
+/**
  * Stores the contributor in the contributor dictionary and add its name to the contributor list of the repository
  * 
  * @param repoName - The full name of the repository (owner/repo - eg. microsoft/vscode).
@@ -79,18 +89,28 @@ export function addContributors(repoName: string, contributors: ContributorEntry
 }
 
 /**
- * Makes sure that the contributor data has been completed with the complete user information,
- * by requesting the user data and updating the cache, if needed.
+ * A `completeContributor` factory. Mainly here to help with testing so we don't have to mock the HTTP calls,
+ * but only the function that is tasked with fetching the data.
  * 
- * @param username - The contributor user name
+ * @param request - The function to fetch the users.
  */
-export async function completeContributor(username: string): Promise<Contributor> {
-  const currentContributor = _ContributorCache[username];
-
-  if ('email' in currentContributor) { return currentContributor; }
-
-  const user = await requestUser(username);
+export function createCompleteContributor(requestUser: typeof getUser): CompleteContributorFunction {
+  /**
+   * Makes sure that the contributor data has been completed with the complete user information,
+   * by requesting the user data and updating the cache, if needed.
+   * 
+   * @param username - The contributor user name
+   */
+  return async function completeContributor(username) {
+    const currentContributor = _ContributorCache[username];
   
-  const contributor: Contributor = _ContributorCache[username] = Object.assign({}, currentContributor, user);
-  return contributor;
+    if (currentContributor && 'email' in currentContributor) { return currentContributor; }
+  
+    const user = await requestUser(username);
+    
+    const contributor: Contributor = _ContributorCache[username] = Object.assign({}, currentContributor, user);
+    return contributor;
+  }
 }
+
+export const completeContributor = createCompleteContributor(getUser);

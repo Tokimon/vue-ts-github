@@ -6,7 +6,7 @@ import * as contributorCache from '~/store/contributorCache';
 
 
 
-export type getContributorsFunction = (fullRepoName: string, per_page: number) => Promise<ContributorEntry[]>;
+export type getContributorsFunction = (fullRepoName: string, per_page?: number) => Promise<ContributorEntry[]>;
 
 
 /**
@@ -24,20 +24,21 @@ export function createGetContributors(request: RequestFunction): getContributors
    * @param per_page - The number of results to fetch per page
    */
   return async function getContributors(fullRepoName, per_page = 30) {
-    const result = await request<GithubContributor[]>(`/repos/${fullRepoName}/contributors`, {
-      sort: 'contributions',
-      order: 'desc',
-      per_page
-    });
+    const result = await request<GithubContributor[]>(
+      `/repos/${fullRepoName}/contributors`,
+      {
+        sort: 'contributions',
+        order: 'desc',
+        per_page
+      }
+    );
 
     const contributors: ContributorEntry[] = result
-      .map(({ name, login, id, avatar_url, html_url, contributions }) => ({
+      .map(({ login, id, avatar_url, html_url }) => ({
         login,
-        name,
         id,
         avatar: avatar_url,
-        github: html_url,
-        contributions
+        github: html_url
       }));
 
     contributorCache.addContributors(fullRepoName, contributors);
