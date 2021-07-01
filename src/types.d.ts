@@ -1,12 +1,12 @@
 export interface ContributorEntry {
   id: number;
   login: string;
-  name: string;
   avatar: string;
   github: string;
 }
 
 export interface Contributor extends ContributorEntry {
+  name?: string | null;
   company?: string | null;
   email?: string | null;
   location?: string | null;
@@ -30,24 +30,22 @@ export interface RepositoryEntry {
 export interface GithubUser {
   id: number;
   login: string;
-  name: string;
-  company: string;
-  email: string;
-  location: string;
+  name: string | null;
+  company: string | null;
+  email: string | null;
+  location: string | null;
   followers: number;
   avatar_url: string;
   html_url: string;
-  hireable?: boolean | null;
-  blog?: string | null
+  hireable: boolean | null;
+  blog: string | null
 }
 
 export interface GithubContributor {
-  name: string;
   login: string;
   id: number;
   avatar_url: string;
   html_url: string;
-  contributions: number;
 }
 
 export interface GithubRepository {
